@@ -1,0 +1,21 @@
+export const COLLECTION_NAMES = {
+  ISSUES: 'issues',
+  USERS: 'users',
+} as const;
+
+export const ISSUE_STATUS = {
+  REPORTED: 'REPORTED',
+  AI_ANALYSED: 'AI_ANALYSED',
+  COMMUNITY_VALIDATED: 'COMMUNITY_VALIDATED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
+} as const;
+
+export const SEVERITY_LEVELS = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL',
+} as const;
+
+export const DEFAULT_SEARCH_RADIUS_METERS = 50;
