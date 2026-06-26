@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server';
+import { AnalyticsService } from '@/services/AnalyticsService';
 
 export async function GET() {
   try {
-    // Stub for Phase 6 Analytics
+    const stats = await AnalyticsService.getDashboardStats();
+    
     return NextResponse.json({ 
       success: true, 
-      data: {
-        message: 'Dashboard Analytics API pending Phase 6 implementation.'
-      } 
+      data: stats
     }, { status: 200 });
   } catch (error: any) {
+    console.error('Dashboard Stats Error:', error);
     return NextResponse.json({ error: 'Failed to fetch dashboard data' }, { status: 500 });
   }
 }
