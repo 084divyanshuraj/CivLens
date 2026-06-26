@@ -11,7 +11,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     return NextResponse.json({ success: true, data: issue }, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Get Issue Error:', error);
     return NextResponse.json({ error: 'Failed to fetch issue' }, { status: 500 });
   }
@@ -26,7 +26,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     await IssueService.updateIssue(id, body);
     
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Update Issue Error:', error);
     return NextResponse.json({ error: 'Failed to update issue' }, { status: 500 });
   }

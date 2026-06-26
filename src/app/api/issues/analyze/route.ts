@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     const newIssue = await IssueService.analyzeIssue(imageUrl, base64Image, mimeType, typedLocation);
 
     return NextResponse.json({ success: true, data: newIssue }, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Analyze Error:', error);
     return NextResponse.json({ error: 'Failed to analyze issue' }, { status: 500 });
   }

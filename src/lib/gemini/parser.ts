@@ -25,7 +25,7 @@ export class GeminiParser {
       // but for a hackathon we assume the LLM follows instructions.
       return parsed as Omit<GeminiResponse, 'duplicateDetection'>;
     } catch (error) {
-      console.error('Failed to parse Gemini JSON:', cleanText);
+      console.error('Failed to parse Gemini JSON:', cleanText, error);
       throw new Error('Invalid JSON format returned by Gemini.');
     }
   }

@@ -7,7 +7,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     await IssueService.upvoteIssue(id);
     
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Upvote Error:', error);
     return NextResponse.json({ error: 'Failed to upvote issue' }, { status: 500 });
   }

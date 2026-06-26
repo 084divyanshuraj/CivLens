@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const imageUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
 
     return NextResponse.json({ success: true, imageUrl }, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Upload Error:', error);
     return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
   }

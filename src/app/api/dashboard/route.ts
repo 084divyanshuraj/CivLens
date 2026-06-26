@@ -9,7 +9,7 @@ export async function GET() {
       success: true, 
       data: stats
     }, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Dashboard Stats Error:', error);
     return NextResponse.json({ error: 'Failed to fetch dashboard data' }, { status: 500 });
   }
