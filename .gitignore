@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Architectural docs
+API.md
+ARCHITECTURE.md
+DATABASE.md
+GEMINI_PROMPTS.md
+TASKS.md
+UI.md
+AGENTS.md
