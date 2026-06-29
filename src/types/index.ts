@@ -33,6 +33,11 @@ export interface ExecutiveSummaryData {
   summary: string;
 }
 
+export interface CommunicationsData {
+  tweetDraft: string;
+  emailDraft: string;
+}
+
 export interface DuplicateDetectionData {
   similarIssuesNearby: boolean;
   duplicateIssueIds?: string[];
@@ -45,6 +50,7 @@ export interface GeminiResponse {
   recommendation: RecommendationData;
   executiveSummary: ExecutiveSummaryData;
   duplicateDetection: DuplicateDetectionData;
+  communications: CommunicationsData;
 }
 
 export interface Issue {
@@ -63,6 +69,7 @@ export interface Issue {
   recommendation: RecommendationData;
   executiveSummary: ExecutiveSummaryData;
   duplicateDetection: DuplicateDetectionData;
+  communications: CommunicationsData;
 }
 
 export interface User {

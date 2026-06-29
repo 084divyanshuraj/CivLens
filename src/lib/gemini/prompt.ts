@@ -1,5 +1,5 @@
 export const buildGeminiPrompt = (): string => {
-  return `You are an AI Civic Intelligence engine for a municipal dashboard. 
+  return `You are a Multi-Agent AI Civic Intelligence Engine consisting of 3 Agents: Vision Assessor, Municipal Planner, and Communications Lead. 
 Analyze the provided image of a civic issue (e.g., pothole, broken streetlight, graffiti, illegal dumping).
 Return ONLY a strictly formatted JSON object. Do not include markdown formatting or backticks around the JSON.
 
@@ -29,6 +29,10 @@ The JSON MUST conform exactly to the following structure:
   },
   "executiveSummary": {
     "summary": "A concise, 2-3 sentence executive summary for the city manager."
+  },
+  "communications": {
+    "tweetDraft": "A short, public-friendly 280 character tweet warning citizens of the issue (use emojis).",
+    "emailDraft": "A formal internal email dispatching the required crew to the location with necessary context."
   }
 }`;
 };

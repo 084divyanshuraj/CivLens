@@ -8,6 +8,15 @@ import { PriorityAgent } from '../lib/agents/PriorityAgent';
 import { RecommendationAgent } from '../lib/agents/RecommendationAgent';
 import { ExecutiveSummaryAgent } from '../lib/agents/ExecutiveSummaryAgent';
 import { DuplicateDetectionAgent } from '../lib/agents/DuplicateDetectionAgent';
+
+// Mock Communications Agent for parsing
+const CommunicationsAgent = {
+  process: (rawJson: any) => ({
+    tweetDraft: rawJson.communications?.tweetDraft || "Issue reported in your area. Teams are investigating.",
+    emailDraft: rawJson.communications?.emailDraft || "Please dispatch a team to the reported location."
+  })
+};
+
 export class IssueService {
   private static collection = getCollection(COLLECTION_NAMES.ISSUES);
 
@@ -26,6 +35,7 @@ export class IssueService {
       recommendation: data.recommendation,
       executiveSummary: data.executiveSummary,
       duplicateDetection: data.duplicateDetection,
+      communications: data.communications,
     } as Issue;
   }
 
@@ -90,6 +100,7 @@ export class IssueService {
     const priority = PriorityAgent.process(geminiRaw, 0); // 0 initial upvotes
     const recommendation = RecommendationAgent.process(geminiRaw);
     const executiveSummary = ExecutiveSummaryAgent.process(geminiRaw);
+    const communications = CommunicationsAgent.process(geminiRaw);
     
     // 3. Run Geospatial Duplicate Detection
     const duplicateDetection = await this.checkDuplicateIssues(location, vision.issueType);
@@ -105,7 +116,8 @@ export class IssueService {
       priority,
       recommendation,
       executiveSummary,
-      duplicateDetection
+      duplicateDetection,
+      communications
     };
 
     return this.createIssue(newIssueData);
