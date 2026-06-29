@@ -73,6 +73,10 @@ export default function Home() {
       // Strip the data:image/jpeg;base64, prefix for Gemini
       const rawBase64 = preview.replace(/^data:image\/\w+;base64,/, "");
 
+      // Generate realistic demo coordinates (New York City area)
+      const demoLat = 40.7128 + (Math.random() - 0.5) * 0.05;
+      const demoLng = -74.0060 + (Math.random() - 0.5) * 0.05;
+
       // 2. Analyze via Gemini
       const analyzeRes = await fetch("/api/issues/analyze", {
         method: "POST",
@@ -81,7 +85,7 @@ export default function Home() {
           imageUrl: uploadData.imageUrl,
           base64Image: rawBase64,
           mimeType: file?.type || "image/jpeg",
-          location: { lat: 0, lng: 0, address: address },
+          location: { lat: demoLat, lng: demoLng, address: address },
         }),
       });
 

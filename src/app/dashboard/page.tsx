@@ -1,20 +1,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { 
   BarChart3, AlertCircle, CheckCircle2, Clock, 
-  MapPin, Loader2, RefreshCw, AlertTriangle, Cpu
+  MapPin, Loader2, RefreshCw, AlertTriangle, Cpu, Globe2
 } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
+
+// Dynamically import map to avoid Next.js SSR window errors
+const LiveMap = dynamic(() => import("@/components/LiveMap"), { ssr: false, loading: () => (
+  <div className="h-full w-full flex items-center justify-center bg-slate-900/50 rounded-2xl border border-slate-700">
+    <Loader2 className="h-8 w-8 animate-spin text-sky-500" />
+  </div>
+)});
 
 export default function Dashboard() {
   const [stats, setStats] = useState<any>(null);
   const [issues, setIssues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (isBackgroundSync = false) => {
+    if (!isBackgroundSync) setLoading(true);
     try {
       const [statsRes, issuesRes] = await Promise.all([
         fetch("/api/dashboard"),
@@ -29,12 +38,20 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
     } finally {
-      setLoading(false);
+      if (!isBackgroundSync) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(false); // Initial fetch shows loading spinner
+    
+    // Set up Real-Time Sync Polling (every 3 seconds) for Hackathon Demo
+    // Passes true to indicate it's a background sync (no loading spinner)
+    const interval = setInterval(() => {
+      fetchData(true);
+    }, 3000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -110,6 +127,20 @@ export default function Dashboard() {
           icon={<CheckCircle2 className="h-5 w-5 text-emerald-400" />} 
           colorClass="emerald"
         />
+      </motion.div>
+
+      {/* Interactive 3D Map Section */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className="w-full h-80 glass-panel rounded-3xl p-2 relative shadow-[0_0_20px_rgba(2,132,199,0.15)] z-0"
+      >
+        <div className="absolute top-6 left-6 z-10 bg-slate-900/80 backdrop-blur-md border border-slate-700 px-4 py-2 rounded-xl flex items-center gap-2 shadow-lg">
+          <Globe2 className="h-4 w-4 text-sky-400 animate-pulse" />
+          <span className="text-xs font-bold text-white tracking-widest uppercase">Live Civic Map</span>
+        </div>
+        <LiveMap issues={issues} />
       </motion.div>
 
       {/* Main Content Grid */}
