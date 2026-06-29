@@ -1,36 +1,26 @@
 import { NextResponse } from 'next/server';
-import { adminStorage } from '@/lib/firebase/admin';
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const formData = await req.formData();
-    const file = formData.get('file') as File;
-    
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    const body = await request.json();
+    const { imageBase64 } = body;
+
+    if (!imageBase64) {
+      return NextResponse.json({ error: 'No image provided' }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const extension = file.name.split('.').pop();
-    const filename = `issues/${crypto.randomUUID()}.${extension}`; // Using web crypto
-
-    const bucket = adminStorage.bucket();
-    const fileRef = bucket.file(filename);
-
-    await fileRef.save(buffer, {
-      metadata: {
-        contentType: file.type,
-      },
-    });
-
-    // Make the file publicly accessible
-    await fileRef.makePublic();
+    // For Hackathon purposes (to avoid ImgBB IP blocking and Firebase billing),
+    // we will simply return the base64 string to act as the "URL".
+    // This allows the image to be stored directly in Firestore!
     
-    const imageUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+    // Ensure it has the data URI prefix so the HTML <img src="..."> can render it
+    const imageUrl = imageBase64.startsWith('data:') 
+      ? imageBase64 
+      : `data:image/jpeg;base64,${imageBase64}`;
 
     return NextResponse.json({ success: true, imageUrl }, { status: 200 });
   } catch (error) {
     console.error('Upload Error:', error);
-    return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process image' }, { status: 500 });
   }
 }
