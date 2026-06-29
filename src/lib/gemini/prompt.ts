@@ -25,7 +25,7 @@ The JSON MUST conform exactly to the following structure:
     "temporarySolution": "Immediate stop-gap measure to ensure safety",
     "permanentSolution": "Long-term fix required",
     "repairComplexity": "LOW", // MUST be one of: LOW, MEDIUM, HIGH
-    "estimatedBudgetRange": "e.g., '$500 - $1000' or 'Under $100'"
+    "estimatedBudgetRange": "e.g., '₹50,000 - ₹1,00,000' or 'Under ₹10,000'"
   },
   "executiveSummary": {
     "summary": "A concise, 2-3 sentence executive summary for the city manager."

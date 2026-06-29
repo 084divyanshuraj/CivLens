@@ -17,9 +17,9 @@ export default function AnalyticsCharts({ roiData, categoryData }: { roiData: an
 
   // Format currency
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       maximumFractionDigits: 0
     }).format(value);
   };
@@ -61,7 +61,7 @@ export default function AnalyticsCharts({ roiData, categoryData }: { roiData: an
                 fontSize={12} 
                 tickLine={false} 
                 axisLine={false}
-                tickFormatter={(value) => `$${value / 1000}k`}
+                tickFormatter={(value) => value >= 10000000 ? `₹${(value / 10000000).toFixed(1)}Cr` : `₹${(value / 100000).toFixed(1)}L`}
               />
               <Tooltip 
                 contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: '#f8fafc' }}

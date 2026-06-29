@@ -44,18 +44,18 @@ export class AnalyticsService {
     });
 
     // Calculate Hackathon ROI Data (Predictive Budget Savings)
-    // Formula: Each priority point saves ~$1,250 in delayed emergency repair costs
-    const currentMonthSavings = issues.reduce((acc, issue) => acc + (issue.priority.score * 1250), 0);
-    const totalBudgetSaved = 145000 + currentMonthSavings; // Add historical base
+    // Formula: Each priority point saves ~₹1,00,000 (1 Lakh) in delayed emergency repair costs
+    const currentMonthSavings = issues.reduce((acc, issue) => acc + (issue.priority.score * 100000), 0);
+    const totalBudgetSaved = 12500000 + currentMonthSavings; // Add historical base (1.25 Cr)
     
-    // Generate realistic monthly ROI trend for charts
+    // Generate realistic monthly ROI trend for charts (in INR)
     const roiTrend = [
-      { month: 'Jan', savings: 24500 },
-      { month: 'Feb', savings: 28200 },
-      { month: 'Mar', savings: 31000 },
-      { month: 'Apr', savings: 29500 },
-      { month: 'May', savings: 32000 },
-      { month: 'Jun', savings: currentMonthSavings > 0 ? currentMonthSavings : 35000 },
+      { month: 'Jan', savings: 1550000 },
+      { month: 'Feb', savings: 1820000 },
+      { month: 'Mar', savings: 2100000 },
+      { month: 'Apr', savings: 1950000 },
+      { month: 'May', savings: 2200000 },
+      { month: 'Jun', savings: currentMonthSavings > 0 ? currentMonthSavings : 2500000 },
     ];
 
     // Generate Basic AI Insights Aggregation locally based on data
