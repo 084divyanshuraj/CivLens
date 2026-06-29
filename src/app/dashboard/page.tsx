@@ -356,7 +356,9 @@ export default function Dashboard() {
                       </div>
                       <div>
                         <span className="text-slate-500 block mb-0.5">Estimated Budget</span>
-                        <span className="text-emerald-300 font-bold bg-emerald-950/30 px-2 py-0.5 rounded">{selectedIssue.recommendation?.estimatedBudgetRange || "N/A"}</span>
+                        <span className="text-emerald-300 font-bold bg-emerald-950/30 px-2 py-0.5 rounded">
+                          {selectedIssue.recommendation?.estimatedBudgetRange?.replace(/\$/g, '₹') || "N/A"}
+                        </span>
                       </div>
                     </div>
                   </div>
