@@ -10,12 +10,13 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 
-// Dynamically import map to avoid Next.js SSR window errors
+// Dynamically import map and charts to avoid Next.js SSR window errors
 const LiveMap = dynamic(() => import("@/components/LiveMap"), { ssr: false, loading: () => (
   <div className="h-full w-full flex items-center justify-center bg-slate-900/50 rounded-2xl border border-slate-700">
     <Loader2 className="h-8 w-8 animate-spin text-sky-500" />
   </div>
 )});
+const AnalyticsCharts = dynamic(() => import("@/components/AnalyticsCharts"), { ssr: false });
 
 export default function Dashboard() {
   const [stats, setStats] = useState<any>(null);
@@ -140,6 +141,15 @@ export default function Dashboard() {
             icon={<CheckCircle2 className="h-5 w-5 text-emerald-400" />} 
             colorClass="emerald"
           />
+        </motion.div>
+
+        {/* Analytics Charts Section (Option 3 Feature) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.5 }}
+        >
+          <AnalyticsCharts roiData={stats?.roiData} categoryData={stats?.categoryDistribution} />
         </motion.div>
 
         {/* Interactive 3D Map Section */}

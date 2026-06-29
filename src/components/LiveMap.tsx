@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -39,25 +39,47 @@ export default function LiveMap({ issues }: { issues: any[] }) {
           if (issue.location.lat === 0 && issue.location.lng === 0) return null; // Ignore old test data
 
           return (
-            <Marker 
-              key={issue.id} 
-              position={[issue.location.lat, issue.location.lng]} 
-              icon={customIcon}
-            >
-              <Popup className="custom-popup">
-                <div className="p-1">
-                  <span className="text-[10px] font-bold tracking-widest uppercase text-sky-500 mb-1 block">
-                    {issue.vision?.issueType || "Issue"}
-                  </span>
-                  <h4 className="font-bold text-slate-800 text-sm mb-1 leading-tight">
-                    {issue.executiveSummary?.summary || "Reported Issue"}
-                  </h4>
-                  <p className="text-xs text-slate-500">
-                    Priority Score: {issue.priority?.score}/100
-                  </p>
-                </div>
-              </Popup>
-            </Marker>
+            <div key={issue.id}>
+              {/* Heatmap Glow Effect */}
+              <CircleMarker 
+                center={[issue.location.lat, issue.location.lng]}
+                radius={30}
+                pathOptions={{
+                  fillColor: '#ef4444', // Red glow
+                  fillOpacity: 0.15,
+                  color: 'transparent'
+                }}
+              />
+              <CircleMarker 
+                center={[issue.location.lat, issue.location.lng]}
+                radius={15}
+                pathOptions={{
+                  fillColor: '#ef4444',
+                  fillOpacity: 0.3,
+                  color: 'transparent'
+                }}
+              />
+              
+              {/* Standard Marker */}
+              <Marker 
+                position={[issue.location.lat, issue.location.lng]} 
+                icon={customIcon}
+              >
+                <Popup className="custom-popup bg-slate-900 border-slate-700 text-white">
+                  <div className="p-1">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-sky-500 mb-1 block">
+                      {issue.vision?.issueType || "Issue"}
+                    </span>
+                    <h4 className="font-bold text-slate-800 text-sm mb-1 leading-tight">
+                      {issue.executiveSummary?.summary || "Reported Issue"}
+                    </h4>
+                    <p className="text-xs text-slate-500">
+                      Priority Score: <span className="font-bold text-rose-500">{issue.priority?.score}/100</span>
+                    </p>
+                  </div>
+                </Popup>
+              </Marker>
+            </div>
           );
         })}
       </MapContainer>
