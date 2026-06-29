@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { UploadCloud, MapPin, Loader2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
@@ -60,7 +61,7 @@ export default function Home() {
     setResult(null);
 
     try {
-      // 1. Upload Base64 (Using our bypassed Firestore method)
+      // 1. Upload Base64
       const uploadRes = await fetch("/api/issues/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -80,7 +81,7 @@ export default function Home() {
           imageUrl: uploadData.imageUrl,
           base64Image: rawBase64,
           mimeType: file?.type || "image/jpeg",
-          location: { lat: 0, lng: 0, address: address }, // Using a generic location structure
+          location: { lat: 0, lng: 0, address: address },
         }),
       });
 
@@ -98,95 +99,145 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center w-full min-h-[70vh]">
-      <div className="w-full max-w-2xl bg-white rounded-2xl border border-zinc-200 shadow-sm p-8">
-        
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="w-full max-w-2xl glass-panel rounded-3xl p-10 relative overflow-hidden"
+      >
+        {/* Glow Effects */}
+        <div className="absolute top-[-50px] left-[-50px] w-40 h-40 bg-sky-500/20 rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-[-50px] right-[-50px] w-40 h-40 bg-emerald-500/20 rounded-full blur-[80px] pointer-events-none" />
+
         {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold tracking-tight text-black mb-2">Report a Civic Issue</h1>
-          <p className="text-zinc-500">Upload a photo to automatically analyze and report infrastructure problems.</p>
+        <div className="text-center mb-10 relative z-10">
+          <motion.h1 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-4xl font-extrabold tracking-tight text-white mb-3"
+          >
+            Report a <span className="glow-text">Civic Issue</span>
+          </motion.h1>
+          <p className="text-slate-400 text-lg">Upload a photo to automatically analyze and report infrastructure problems.</p>
         </div>
 
         {/* Upload Zone */}
-        {!preview ? (
-          <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-zinc-300 rounded-xl cursor-pointer bg-zinc-50 hover:bg-zinc-100 transition-colors">
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <UploadCloud className="w-10 h-10 mb-3 text-zinc-400" />
-              <p className="mb-2 text-sm text-zinc-600"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-              <p className="text-xs text-zinc-500">SVG, PNG, JPG or WEBP</p>
-            </div>
-            <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
-          </label>
-        ) : (
-          <div className="relative w-full h-64 rounded-xl overflow-hidden border border-zinc-200 mb-6">
-            <Image src={preview} alt="Preview" fill className="object-cover" />
-            <button 
-              onClick={() => { setPreview(null); setFile(null); setResult(null); }}
-              className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-black/80 transition"
+        <AnimatePresence mode="wait">
+          {!preview ? (
+            <motion.label 
+              key="upload"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative z-10 flex flex-col items-center justify-center w-full h-72 border-2 border-dashed border-slate-600/50 rounded-2xl cursor-pointer bg-slate-800/40 hover:bg-slate-800/80 hover:border-sky-500/50 transition-all shadow-inner group"
             >
-              Change Photo
-            </button>
-          </div>
-        )}
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <UploadCloud className="w-14 h-14 mb-4 text-slate-500 group-hover:text-sky-400 transition-colors duration-300" />
+                <p className="mb-2 text-base text-slate-300"><span className="font-semibold text-white">Click to upload</span> or drag and drop</p>
+                <p className="text-sm text-slate-500">SVG, PNG, JPG or WEBP</p>
+              </div>
+              <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+            </motion.label>
+          ) : (
+            <motion.div 
+              key="preview"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative z-10 w-full h-72 rounded-2xl overflow-hidden border border-slate-600 mb-6 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+            >
+              <Image src={preview} alt="Preview" fill className="object-cover" />
+              <button 
+                onClick={() => { setPreview(null); setFile(null); setResult(null); }}
+                className="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md text-white px-4 py-2 rounded-xl text-sm font-semibold border border-slate-700 hover:bg-slate-800 transition"
+              >
+                Change Photo
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Location Input */}
-        <div className="mt-6 mb-8">
-          <label className="block text-sm font-medium text-black mb-2">Location</label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MapPin className="h-5 w-5 text-zinc-400" />
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-8 mb-8 relative z-10"
+        >
+          <label className="block text-sm font-semibold text-slate-300 mb-2 ml-1">Location</label>
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <MapPin className="h-5 w-5 text-slate-500 group-focus-within:text-sky-400 transition-colors" />
             </div>
             <input 
               type="text" 
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="block w-full pl-10 pr-3 py-3 border border-zinc-300 rounded-xl focus:ring-black focus:border-black sm:text-sm outline-none transition" 
+              className="block w-full pl-12 pr-4 py-4 bg-slate-900/50 border border-slate-700 rounded-2xl focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 sm:text-base outline-none transition shadow-inner text-white placeholder-slate-500" 
               placeholder="e.g. 123 Main St, New York" 
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Submit Button */}
-        {!result && (
-          <button 
-            onClick={handleAnalyze}
-            disabled={!preview || !address || isAnalyzing}
-            className="w-full flex items-center justify-center py-4 px-4 border border-transparent rounded-xl shadow-sm text-base font-medium text-white bg-black hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
-                Analyzing with AI...
-              </>
-            ) : (
-              "Analyze & Submit Report"
-            )}
-          </button>
-        )}
+        <AnimatePresence>
+          {!result && (
+            <motion.button 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, height: 0, margin: 0, overflow: 'hidden' }}
+              transition={{ delay: 0.4 }}
+              onClick={handleAnalyze}
+              disabled={!preview || !address || isAnalyzing}
+              className="relative z-10 w-full flex items-center justify-center py-4 px-4 rounded-2xl shadow-[0_0_20px_rgba(2,132,199,0.2)] text-lg font-bold text-white bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-500 hover:to-blue-600 hover:shadow-[0_0_30px_rgba(2,132,199,0.4)] disabled:opacity-50 disabled:cursor-not-allowed transition-all overflow-hidden border border-sky-400/30"
+            >
+              {isAnalyzing && (
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]" />
+              )}
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+                  Analyzing with AI...
+                </>
+              ) : (
+                "Analyze & Submit Report"
+              )}
+            </motion.button>
+          )}
+        </AnimatePresence>
 
         {/* Result UI */}
-        {result && (
-          <div className="mt-4 p-6 bg-green-50 border border-green-100 rounded-xl flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-4">
-            <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <CheckCircle2 className="h-6 w-6 text-green-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-green-900 mb-1">Issue Reported Successfully</h3>
-            <p className="text-sm text-green-700 mb-4">
-              AI Priority Score: <span className="font-bold">{result.priority.score}/100</span>
-            </p>
-            <p className="text-sm text-zinc-600 bg-white px-4 py-2 rounded-lg border border-green-200">
-              "{result.executiveSummary.title}"
-            </p>
-            
-            <button 
-              onClick={() => { setPreview(null); setFile(null); setAddress(""); setResult(null); }}
-              className="mt-6 text-sm font-medium text-green-700 hover:text-green-900 underline underline-offset-4"
+        <AnimatePresence>
+          {result && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              className="mt-4 p-8 bg-emerald-950/30 border border-emerald-500/30 rounded-2xl flex flex-col items-center text-center shadow-[0_0_30px_rgba(16,185,129,0.15)] relative overflow-hidden z-10 backdrop-blur-md"
             >
-              Submit another report
-            </button>
-          </div>
-        )}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-teal-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+              <div className="h-16 w-16 bg-emerald-900/50 border border-emerald-500/50 rounded-full flex items-center justify-center mb-5 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                <CheckCircle2 className="h-8 w-8 text-emerald-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">Issue Reported</h3>
+              <p className="text-base text-slate-300 mb-6">
+                AI Priority Score: <span className="font-bold text-emerald-300 bg-emerald-900/50 border border-emerald-500/30 px-3 py-1 rounded-lg ml-2">{result.priority.score}/100</span>
+              </p>
+              <div className="text-sm text-slate-200 bg-slate-900/80 px-6 py-4 rounded-xl border border-slate-700 w-full font-medium leading-relaxed shadow-inner">
+                "{result.executiveSummary?.summary || result.executiveSummary?.title}"
+              </div>
+              
+              <button 
+                onClick={() => { setPreview(null); setFile(null); setAddress(""); setResult(null); }}
+                className="mt-8 text-sm font-semibold text-slate-400 hover:text-white transition-colors"
+              >
+                Submit another report
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      </div>
+      </motion.div>
     </div>
   );
 }
