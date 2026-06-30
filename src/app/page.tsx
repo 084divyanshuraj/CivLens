@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { UploadCloud, MapPin, Loader2, CheckCircle2, ThumbsUp, ShieldCheck, Trophy, Sparkles } from "lucide-react";
+import { UploadCloud, MapPin, Loader2, CheckCircle2, ThumbsUp, ShieldCheck, Trophy, Sparkles, Navigation } from "lucide-react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
@@ -17,6 +17,8 @@ export default function Home() {
   const [address, setAddress] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
 
   // Community Feed State
   const [recentIssues, setRecentIssues] = useState<any[]>([]);
@@ -137,6 +139,43 @@ export default function Home() {
     reader.readAsDataURL(selectedFile);
   };
 
+  const handleGetLocation = () => {
+    setIsLocating(true);
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      setIsLocating(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setCoordinates({ lat: latitude, lng: longitude });
+
+        try {
+          // Reverse Geocoding using OpenStreetMap (Nominatim API)
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await res.json();
+          if (data && data.display_name) {
+            setAddress(data.display_name);
+          } else {
+            setAddress(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+          }
+        } catch (error) {
+          console.error("Failed to reverse geocode:", error);
+          setAddress(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        alert("Failed to get location. Please ensure you have granted location permissions.");
+        setIsLocating(false);
+      }
+    );
+  };
+
   const handleAnalyze = async () => {
     if (!preview || !address) return;
     setIsAnalyzing(true);
@@ -155,9 +194,9 @@ export default function Home() {
       // Strip the data:image/jpeg;base64, prefix for Gemini
       const rawBase64 = preview.replace(/^data:image\/\w+;base64,/, "");
 
-      // Generate realistic demo coordinates (New York City area)
-      const demoLat = 40.7128 + (Math.random() - 0.5) * 0.05;
-      const demoLng = -74.0060 + (Math.random() - 0.5) * 0.05;
+      // Use real GPS coordinates if available, otherwise fallback to demo NY coordinates
+      const finalLat = coordinates?.lat || (40.7128 + (Math.random() - 0.5) * 0.05);
+      const finalLng = coordinates?.lng || (-74.0060 + (Math.random() - 0.5) * 0.05);
 
       // 2. Analyze via Gemini
       const analyzeRes = await fetch("/api/issues/analyze", {
@@ -167,7 +206,7 @@ export default function Home() {
           imageUrl: uploadData.imageUrl,
           base64Image: rawBase64,
           mimeType: file?.type || "image/jpeg",
-          location: { lat: demoLat, lng: demoLng, address: address },
+          location: { lat: finalLat, lng: finalLng, address: address },
         }),
       });
 
@@ -273,17 +312,28 @@ export default function Home() {
               className="mt-8 mb-8 relative z-10"
             >
               <label className="block text-sm font-semibold text-slate-300 mb-2 ml-1">Location</label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <MapPin className="h-5 w-5 text-slate-500 group-focus-within:text-sky-400 transition-colors" />
+              <div className="flex gap-2">
+                <div className="relative group flex-1">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <MapPin className="h-5 w-5 text-slate-500 group-focus-within:text-sky-400 transition-colors" />
+                  </div>
+                  <input 
+                    type="text" 
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="block w-full pl-12 pr-4 py-4 bg-slate-900/50 border border-slate-700 rounded-2xl focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 sm:text-base outline-none transition shadow-inner text-white placeholder-slate-500" 
+                    placeholder="e.g. 123 Main St, New Delhi" 
+                  />
                 </div>
-                <input 
-                  type="text" 
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="block w-full pl-12 pr-4 py-4 bg-slate-900/50 border border-slate-700 rounded-2xl focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 sm:text-base outline-none transition shadow-inner text-white placeholder-slate-500" 
-                  placeholder="e.g. 123 Main St, New Delhi" 
-                />
+                <button
+                  onClick={handleGetLocation}
+                  disabled={isLocating}
+                  className="px-4 bg-slate-800 border border-slate-700 rounded-2xl text-sky-400 hover:bg-slate-700 hover:text-white transition-colors flex items-center gap-2 font-semibold disabled:opacity-50 shadow-md"
+                  title="Use My Location"
+                >
+                  {isLocating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Navigation className="h-5 w-5" />}
+                  <span className="hidden sm:inline">Use GPS</span>
+                </button>
               </div>
             </motion.div>
 

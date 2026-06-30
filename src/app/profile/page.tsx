@@ -6,14 +6,26 @@ import { doc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Award, Camera, CheckCircle, Shield, TrendingUp, UserCircle } from "lucide-react";
+import { Award, Camera, CheckCircle, Shield, TrendingUp, UserCircle, MapPin, Loader2 } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const LiveMap = dynamic(() => import("@/components/LiveMap"), { 
+  ssr: false, 
+  loading: () => (
+    <div className="h-full w-full flex items-center justify-center bg-slate-900/50 rounded-2xl border border-slate-700">
+      <Loader2 className="h-8 w-8 animate-spin text-sky-500" />
+    </div>
+  )
+});
 import Image from "next/image";
 
 export default function ProfilePage() {
   const { user, civicScore, role, loading, refreshScore } = useAuth();
   const router = useRouter();
   const [isSwitching, setIsSwitching] = useState(false);
+  const [issues, setIssues] = useState<any[]>([]);
+  const [isFetchingIssues, setIsFetchingIssues] = useState(true);
 
   const handleBecomeOfficial = async () => {
     if (!user) return;
@@ -33,8 +45,24 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
+    } else if (user) {
+      fetchIssues();
     }
   }, [user, loading, router]);
+
+  const fetchIssues = async () => {
+    try {
+      const res = await fetch("/api/issues");
+      const data = await res.json();
+      if (data.success) {
+        setIssues(data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch issues:", error);
+    } finally {
+      setIsFetchingIssues(false);
+    }
+  };
 
   if (loading || !user) {
     return (
@@ -187,6 +215,34 @@ export default function ProfilePage() {
             <p className="text-slate-400 text-sm font-medium">Earn +10 Points</p>
           </div>
         </Link>
+      </div>
+
+      {/* Citizen Live Map */}
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-700/50 shadow-xl mt-4 relative overflow-hidden">
+        <div className="absolute top-[-50px] left-[-50px] w-40 h-40 bg-sky-500/10 rounded-full blur-[80px] pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+              <MapPin className="h-6 w-6 text-sky-400" />
+              Neighborhood Watch Map
+            </h2>
+            <p className="text-slate-400 text-sm mt-1">Explore all reported civic issues in your city in real-time.</p>
+          </div>
+          <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-700 px-4 py-2 rounded-xl text-sm font-semibold text-slate-300">
+            <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.8)]" />
+            Live Tracker
+          </div>
+        </div>
+        
+        <div className="w-full h-[400px] rounded-2xl overflow-hidden border border-slate-700/80 shadow-[0_0_30px_rgba(2,132,199,0.15)] relative">
+          {isFetchingIssues ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-900">
+              <Loader2 className="h-10 w-10 animate-spin text-sky-500" />
+            </div>
+          ) : (
+            <LiveMap issues={issues} />
+          )}
+        </div>
       </div>
 
     </motion.div>
