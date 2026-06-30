@@ -4,8 +4,13 @@ import { useState, useEffect } from "react";
 import { UploadCloud, MapPin, Loader2, CheckCircle2, ThumbsUp, ShieldCheck, Trophy, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const { user, civicScore, refreshScore } = useAuth();
+  const router = useRouter();
+
   // Upload State
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -18,12 +23,25 @@ export default function Home() {
   const [isFetchingFeed, setIsFetchingFeed] = useState(true);
   const [upvotingId, setUpvotingId] = useState<string | null>(null);
 
-  // Gamification State (Local mock for demo purposes)
-  const [userScore, setUserScore] = useState(0);
+  // Gamification State
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
 
   useEffect(() => {
     fetchCommunityFeed();
+    fetchLeaderboard();
   }, []);
+
+  const fetchLeaderboard = async () => {
+    try {
+      const res = await fetch("/api/leaderboard");
+      const data = await res.json();
+      if (data.success) {
+        setLeaderboard(data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch leaderboard:", error);
+    }
+  };
 
   const fetchCommunityFeed = async () => {
     try {
@@ -39,11 +57,31 @@ export default function Home() {
     }
   };
 
+  const awardPoints = async (points: number) => {
+    if (!user) return;
+    try {
+      await fetch("/api/users/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: user.uid, points })
+      });
+      refreshScore();
+      fetchLeaderboard(); // Refresh global ranks
+    } catch (error) {
+      console.error("Failed to award points:", error);
+    }
+  };
+
   const handleUpvote = async (id: string) => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
     setUpvotingId(id);
     try {
       await fetch(`/api/issues/${id}/upvote`, { method: "POST" });
-      setUserScore(prev => prev + 10); // Gamification: +10 pts for verifying!
+      await awardPoints(10); // +10 pts for verifying!
       fetchCommunityFeed(); // Refresh feed
     } catch (error) {
       console.error("Upvote failed:", error);
@@ -53,6 +91,11 @@ export default function Home() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
@@ -132,7 +175,7 @@ export default function Home() {
       if (!analyzeData.success) throw new Error("Analysis Failed");
 
       setResult(analyzeData.data);
-      setUserScore(prev => prev + 50); // Gamification: +50 pts for reporting!
+      await awardPoints(50); // Gamification: +50 pts for reporting!
       fetchCommunityFeed(); // Refresh feed to show new post
     } catch (error) {
       alert("Something went wrong during analysis.");
@@ -140,6 +183,13 @@ export default function Home() {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const getRankTitle = (score: number) => {
+    if (score >= 1000) return "City Guardian";
+    if (score >= 500) return "Local Hero";
+    if (score >= 100) return "Active Citizen";
+    return "Newcomer";
   };
 
   return (
@@ -151,10 +201,10 @@ export default function Home() {
           <ShieldCheck className="h-6 w-6 text-sky-400" />
           <h2 className="text-white font-bold tracking-widest uppercase text-sm">Civic Hero Portal</h2>
         </div>
-        <div className="flex items-center gap-2 bg-slate-950 px-4 py-2 rounded-xl border border-sky-500/30">
+        <div className="flex items-center gap-2 bg-slate-950 px-4 py-2 rounded-xl border border-sky-500/30 cursor-pointer hover:bg-slate-900 transition-colors" onClick={() => !user && router.push("/login")}>
           <Sparkles className="h-4 w-4 text-amber-400" />
           <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Your Civic Score:</span>
-          <span className="text-white font-black text-lg">{userScore}</span>
+          <span className="text-white font-black text-lg">{user ? civicScore : "Login"}</span>
         </div>
       </div>
 
@@ -308,36 +358,26 @@ export default function Home() {
               Civic Leaderboard
             </h2>
             <div className="space-y-3 relative z-10">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-amber-500/30 shadow-[0_0_10px_rgba(251,191,36,0.1)]">
-                <div className="flex items-center gap-3">
-                  <span className="text-amber-400 font-black text-lg">1</span>
-                  <div>
-                    <span className="block text-white font-bold text-sm">You</span>
-                    <span className="block text-xs text-amber-500/80 uppercase tracking-wider font-semibold">City Guardian</span>
+              {leaderboard.length === 0 ? (
+                <div className="text-slate-500 text-sm py-4 text-center">Loading heroes...</div>
+              ) : (
+                leaderboard.map((lbUser, idx) => (
+                  <div key={lbUser.id} className={`flex items-center justify-between p-3 rounded-xl ${user?.uid === lbUser.id ? 'bg-slate-900/80 border border-amber-500/30 shadow-[0_0_10px_rgba(251,191,36,0.1)]' : 'bg-slate-900/40 border border-slate-700/50'}`}>
+                    <div className="flex items-center gap-3">
+                      <span className={`font-black text-lg ${idx === 0 ? 'text-amber-400' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-amber-700' : 'text-slate-500'}`}>{idx + 1}</span>
+                      <div>
+                        <span className="block text-white font-bold text-sm truncate max-w-[120px]">
+                          {user?.uid === lbUser.id ? "You" : lbUser.displayName || "Citizen"}
+                        </span>
+                        <span className="block text-xs text-amber-500/80 uppercase tracking-wider font-semibold">
+                          {getRankTitle(lbUser.civicScore)}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-white font-bold">{lbUser.civicScore} pts</span>
                   </div>
-                </div>
-                <span className="text-white font-bold">{userScore + 2500} pts</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/40 border border-slate-700/50">
-                <div className="flex items-center gap-3">
-                  <span className="text-slate-500 font-black text-lg">2</span>
-                  <div>
-                    <span className="block text-slate-300 font-bold text-sm">Ravi K.</span>
-                    <span className="block text-xs text-slate-500 uppercase tracking-wider font-semibold">Local Hero</span>
-                  </div>
-                </div>
-                <span className="text-slate-400 font-bold">1850 pts</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/40 border border-slate-700/50">
-                <div className="flex items-center gap-3">
-                  <span className="text-slate-500 font-black text-lg">3</span>
-                  <div>
-                    <span className="block text-slate-300 font-bold text-sm">Priya M.</span>
-                    <span className="block text-xs text-slate-500 uppercase tracking-wider font-semibold">Local Hero</span>
-                  </div>
-                </div>
-                <span className="text-slate-400 font-bold">1420 pts</span>
-              </div>
+                ))
+              )}
             </div>
           </div>
 

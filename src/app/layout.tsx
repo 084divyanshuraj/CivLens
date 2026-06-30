@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import { AuthProvider } from "@/context/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,10 +31,12 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-ai-dark text-slate-100 relative">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none mix-blend-screen"></div>
-        <Navbar />
-        <main className="flex-1 w-full mx-auto max-w-5xl px-6 py-8 relative z-10">
-          {children}
-        </main>
+        <AuthProvider>
+          <Navbar />
+          <main className="flex-1 w-full mx-auto max-w-5xl px-6 py-8 relative z-10">
+            {children}
+          </main>
+        </AuthProvider>
       </body>
     </html>
   );
