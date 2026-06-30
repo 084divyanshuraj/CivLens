@@ -38,7 +38,7 @@ export default function Home() {
       const res = await fetch("/api/leaderboard");
       const data = await res.json();
       if (data.success) {
-        setLeaderboard(data.data);
+        setLeaderboard(data.data.slice(0, 5));
       }
     } catch (error) {
       console.error("Failed to fetch leaderboard:", error);

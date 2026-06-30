@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Camera, LayoutDashboard, UserCircle } from 'lucide-react';
+import { Camera, LayoutDashboard, UserCircle, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { auth } from '@/lib/firebase/client';
@@ -37,6 +37,16 @@ export default function Navbar() {
             >
               <LayoutDashboard className="h-4 w-4 hidden sm:block" />
               Dashboard
+            </Link>
+          )}
+
+          {user && (
+            <Link 
+              href="/leaderboard" 
+              className="flex items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-2 text-sm font-semibold text-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.1)] transition-all hover:bg-amber-500/20 hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(251,191,36,0.3)] hidden md:flex"
+            >
+              <Trophy className="h-4 w-4" />
+              Leaderboard
             </Link>
           )}
 

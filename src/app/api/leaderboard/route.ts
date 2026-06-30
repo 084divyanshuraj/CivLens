@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const usersSnapshot = await adminDb.collection('users')
       .orderBy('civicScore', 'desc')
-      .limit(5)
+      .limit(50)
       .get();
       
     const leaderboard = usersSnapshot.docs.map(doc => ({
