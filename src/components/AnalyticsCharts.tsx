@@ -66,7 +66,7 @@ export default function AnalyticsCharts({ roiData, categoryData }: { roiData: an
               <Tooltip 
                 contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: '#f8fafc' }}
                 itemStyle={{ color: '#34d399', fontWeight: 'bold' }}
-                formatter={(value: number) => [formatCurrency(value), 'Savings']}
+                formatter={(value: any) => [formatCurrency(value as number), 'Savings']}
               />
               <Area type="monotone" dataKey="savings" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorSavings)" />
             </AreaChart>
