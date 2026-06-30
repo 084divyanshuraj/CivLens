@@ -1,5 +1,7 @@
 # 🏛️ CivLens: AI-Powered Civic Infrastructure Analyst
 
+**🔴 Live Demo:** [https://civ-lens.vercel.app/](https://civ-lens.vercel.app/)
+
 CivLens is an intelligent, gamified platform designed to revolutionize municipal infrastructure reporting and maintenance. By leveraging AI image analysis, predictive budget modeling, and civic gamification, CivLens bridges the gap between citizens and local governments.
 
 ## 🚀 The Problem
