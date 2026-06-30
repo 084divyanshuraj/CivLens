@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏛️ CivLens: AI-Powered Civic Infrastructure Analyst
 
-## Getting Started
+CivLens is an intelligent, gamified platform designed to revolutionize municipal infrastructure reporting and maintenance. By leveraging AI image analysis, predictive budget modeling, and civic gamification, CivLens bridges the gap between citizens and local governments.
 
-First, run the development server:
+## 🚀 The Problem
+Cities struggle to prioritize infrastructure repairs (potholes, broken streetlights, damaged sidewalks). Manual reporting is slow, unverified, and lacks priority categorization, leading to wasted municipal budgets and frustrated citizens.
+
+## 💡 Our Solution
+CivLens allows citizens to easily report issues by snapping a photo. Our backend uses **Google Gemini AI** to automatically analyze the image, detect the severity of the issue, and estimate potential taxpayer savings if fixed immediately (predictive maintenance). 
+
+To drive engagement, the platform uses a **Gamified Civic Engine**. Users earn "Civic Points" for valid reports and upvotes, competing on a real-time leaderboard for civic recognition.
+
+## ✨ Key Features
+- **🤖 AI Issue Validation:** Powered by Gemini AI, reports are automatically validated, categorized, and assigned a severity level based purely on the uploaded image.
+- **💰 Predictive ROI Widget:** An Admin Dashboard that visualizes estimated municipal budget savings based on proactive vs. reactive maintenance.
+- **🏆 Civic Gamification:** A dynamic leaderboard and point system (using Framer Motion & Canvas Confetti) that rewards citizens for improving their community.
+- **🗺️ Interactive Heatmap:** A real-time map displaying all reported issues, color-coded by severity, allowing city planners to visually identify infrastructure hotspots.
+
+## 🛠️ Technologies Used
+- **Frontend:** Next.js 14, React 19, Tailwind CSS, Framer Motion, Leaflet Maps
+- **Backend:** Next.js API Routes (Serverless)
+- **Database:** Firebase Firestore (Google Cloud)
+- **Authentication:** Firebase Auth
+- **AI Integration:** Google Gemini Pro Vision API
+- **Deployment:** Vercel (Frontend/Backend) & Google Cloud (Database/Auth)
+
+## ☁️ Google Cloud Integrations
+This project relies heavily on Google Cloud Infrastructure:
+1. **Google Gemini API:** Core image analysis and intelligence.
+2. **Firebase Firestore:** Real-time NoSQL database for reports and leaderboard data.
+3. **Firebase Authentication:** Secure user identity management.
+4. **Firebase Admin SDK:** Secure backend data validation and score incrementation.
+
+## 🏃‍♂️ Getting Started
+
+First, clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/084divyanshuraj/CivLens.git
+cd CivLens
+npm install
+```
+
+Create a `.env.local` file with your Firebase and Gemini credentials:
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=civlens
+FIREBASE_CLIENT_EMAIL=your_service_account_email
+FIREBASE_PRIVATE_KEY=your_private_key
+GEMINI_API_KEY=your_gemini_key
+```
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
