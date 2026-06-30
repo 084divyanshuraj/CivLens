@@ -174,26 +174,6 @@ export default function Dashboard() {
           />
         </motion.div>
 
-          <StatCard 
-            title="Pending Review" 
-            value={stats?.pendingIssues || 0} 
-            icon={<Clock className="h-5 w-5 text-amber-400" />} 
-            colorClass="amber"
-          />
-          <StatCard 
-            title="Critical Issues" 
-            value={stats?.criticalIssues || 0} 
-            icon={<AlertCircle className="h-5 w-5 text-rose-400" />} 
-            isCritical={(stats?.criticalIssues || 0) > 0}
-            colorClass="rose"
-          />
-          <StatCard 
-            title="Resolved" 
-            value={stats?.resolvedIssues || 0} 
-            icon={<CheckCircle2 className="h-5 w-5 text-emerald-400" />} 
-            colorClass="emerald"
-          />
-        </motion.div>
 
         {/* AI Budget Impact Widget */}
         <motion.div
