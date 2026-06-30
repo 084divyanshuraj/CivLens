@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { 
   BarChart3, AlertCircle, CheckCircle2, Clock, 
   MapPin, Loader2, RefreshCw, AlertTriangle, Cpu, Globe2,
-  X, Briefcase, Megaphone, Activity, Send
+  X, Briefcase, Megaphone, Activity, Send, Landmark, TrendingDown
 } from "lucide-react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -172,6 +172,61 @@ export default function Dashboard() {
             icon={<CheckCircle2 className="h-5 w-5 text-emerald-400" />} 
             colorClass="emerald"
           />
+        </motion.div>
+
+          <StatCard 
+            title="Pending Review" 
+            value={stats?.pendingIssues || 0} 
+            icon={<Clock className="h-5 w-5 text-amber-400" />} 
+            colorClass="amber"
+          />
+          <StatCard 
+            title="Critical Issues" 
+            value={stats?.criticalIssues || 0} 
+            icon={<AlertCircle className="h-5 w-5 text-rose-400" />} 
+            isCritical={(stats?.criticalIssues || 0) > 0}
+            colorClass="rose"
+          />
+          <StatCard 
+            title="Resolved" 
+            value={stats?.resolvedIssues || 0} 
+            icon={<CheckCircle2 className="h-5 w-5 text-emerald-400" />} 
+            colorClass="emerald"
+          />
+        </motion.div>
+
+        {/* AI Budget Impact Widget */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12, duration: 0.5 }}
+          className="w-full glass-panel rounded-3xl p-6 sm:p-8 border border-emerald-500/30 relative overflow-hidden shadow-[0_0_40px_rgba(52,211,153,0.15)] bg-emerald-950/20"
+        >
+          <div className="absolute -right-20 -top-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 shadow-[0_0_20px_rgba(52,211,153,0.2)]">
+                <Landmark className="h-8 w-8 text-emerald-400" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+                  Taxpayer Savings
+                  <span className="text-xs font-bold bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/30 flex items-center gap-1">
+                    <TrendingDown className="h-3 w-3" /> ROI
+                  </span>
+                </h2>
+                <p className="text-slate-400 text-sm mt-1 font-medium max-w-md">Estimated capital saved by utilizing automated AI infrastructure analysis instead of manual dispatch.</p>
+              </div>
+            </div>
+            <div className="flex flex-col items-end">
+              <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300 drop-shadow-md">
+                ${(stats?.totalIssues || 0) * 50}
+              </div>
+              <p className="text-emerald-500/80 text-xs font-bold tracking-widest uppercase mt-2">
+                Calculation: {stats?.totalIssues || 0} issues × $50
+              </p>
+            </div>
+          </div>
         </motion.div>
 
         {/* Analytics Charts Section (Option 3 Feature) */}
