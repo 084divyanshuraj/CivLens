@@ -9,10 +9,11 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   civicScore: number;
+  role: "citizen" | "official" | null;
   refreshScore: () => void;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true, civicScore: 0, refreshScore: () => {} });
+const AuthContext = createContext<AuthContextType>({ user: null, loading: true, civicScore: 0, role: null, refreshScore: () => {} });
 
 export const useAuth = () => useContext(AuthContext);
 
@@ -20,21 +21,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [civicScore, setCivicScore] = useState(0);
+  const [role, setRole] = useState<"citizen" | "official" | null>(null);
 
   const fetchScore = async (uid: string) => {
     try {
       const userDoc = await getDoc(doc(db, "users", uid));
       if (userDoc.exists()) {
         setCivicScore(userDoc.data().civicScore || 0);
+        setRole(userDoc.data().role || "citizen");
       } else {
         // Create user profile if it doesn't exist
         await setDoc(doc(db, "users", uid), {
           email: user?.email || "",
           displayName: user?.displayName || "Citizen",
           civicScore: 0,
+          role: "citizen",
           createdAt: new Date(),
         });
         setCivicScore(0);
+        setRole("citizen");
       }
     } catch (error) {
       console.error("Failed to fetch user score:", error);
@@ -48,6 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await fetchScore(currentUser.uid);
       } else {
         setCivicScore(0);
+        setRole(null);
       }
       setLoading(false);
     });
@@ -60,7 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, civicScore, refreshScore }}>
+    <AuthContext.Provider value={{ user, loading, civicScore, role, refreshScore }}>
       {children}
     </AuthContext.Provider>
   );

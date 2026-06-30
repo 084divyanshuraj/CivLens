@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { 
   BarChart3, AlertCircle, CheckCircle2, Clock, 
   MapPin, Loader2, RefreshCw, AlertTriangle, Cpu, Globe2,
@@ -24,6 +26,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedIssue, setSelectedIssue] = useState<any>(null);
   const [isExecuting, setIsExecuting] = useState(false);
+  const { user, role, loading: authLoading } = useAuth();
+  const router = useRouter();
 
   const fetchData = async (isBackgroundSync = false) => {
     if (!isBackgroundSync) setLoading(true);
@@ -57,6 +61,13 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    // Route protection
+    if (!authLoading && (!user || role !== "official")) {
+      router.push("/profile");
+    }
+  }, [user, role, authLoading, router]);
+
   const handleExecuteResolution = () => {
     setIsExecuting(true);
     setTimeout(() => {
@@ -77,6 +88,10 @@ export default function Dashboard() {
         <p className="text-sky-400 font-semibold tracking-widest uppercase text-sm animate-pulse">Initializing AI Core...</p>
       </div>
     );
+  }
+
+  if (!user || role !== "official") {
+    return null; // Will redirect in useEffect
   }
 
   return (

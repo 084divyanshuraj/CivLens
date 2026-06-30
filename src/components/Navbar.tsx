@@ -1,14 +1,14 @@
 "use client";
 
 import Link from 'next/link';
-import { Camera, LayoutDashboard } from 'lucide-react';
+import { Camera, LayoutDashboard, UserCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { auth } from '@/lib/firebase/client';
 import { signOut } from 'firebase/auth';
 
 export default function Navbar() {
-  const { user, civicScore } = useAuth();
+  const { user, civicScore, role } = useAuth();
 
   return (
     <motion.nav 
@@ -30,18 +30,35 @@ export default function Navbar() {
 
         {/* Links */}
         <div className="flex items-center gap-4 sm:gap-6">
-          <Link 
-            href="/dashboard" 
-            className="flex items-center gap-2 rounded-xl bg-sky-500/10 border border-sky-500/30 px-4 py-2 text-sm font-semibold text-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.1)] transition-all hover:bg-sky-500/20 hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(56,189,248,0.3)]"
-          >
-            <LayoutDashboard className="h-4 w-4 hidden sm:block" />
-            Dashboard
-          </Link>
+          {role === 'official' && (
+            <Link 
+              href="/dashboard" 
+              className="flex items-center gap-2 rounded-xl bg-sky-500/10 border border-sky-500/30 px-4 py-2 text-sm font-semibold text-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.1)] transition-all hover:bg-sky-500/20 hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(56,189,248,0.3)]"
+            >
+              <LayoutDashboard className="h-4 w-4 hidden sm:block" />
+              Dashboard
+            </Link>
+          )}
+
+          {user && (
+            <Link 
+              href="/profile" 
+              className="flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-4 py-2 text-sm font-semibold text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.1)] transition-all hover:bg-emerald-500/20 hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)]"
+            >
+              <UserCircle className="h-4 w-4 hidden sm:block" />
+              Profile
+            </Link>
+          )}
 
           {user ? (
             <div className="flex items-center gap-3">
               <div className="flex flex-col text-right hidden sm:flex">
-                <span className="text-xs font-bold text-white">{user.displayName || "Citizen"}</span>
+                <div className="flex items-center justify-end gap-2">
+                  <span className="text-xs font-bold text-white">{user.displayName || "Citizen"}</span>
+                  <span className={`text-[9px] font-bold tracking-widest px-1.5 py-0.5 rounded border ${role === 'official' ? 'bg-sky-500/20 text-sky-400 border-sky-500/40' : 'bg-slate-700/50 text-slate-300 border-slate-600'}`}>
+                    {role === 'official' ? 'MAYOR' : 'CITIZEN'}
+                  </span>
+                </div>
                 <span className="text-[10px] text-amber-400 font-bold tracking-widest">{civicScore} PTS</span>
               </div>
               {user.photoURL && (
