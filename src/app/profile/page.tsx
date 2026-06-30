@@ -1,16 +1,34 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
+import { auth, db } from "@/lib/firebase/client";
+import { doc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Award, Camera, CheckCircle, Shield, TrendingUp, UserCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function ProfilePage() {
-  const { user, civicScore, role, loading } = useAuth();
+  const { user, civicScore, role, loading, refreshScore } = useAuth();
   const router = useRouter();
+  const [isSwitching, setIsSwitching] = useState(false);
+
+  const handleBecomeOfficial = async () => {
+    if (!user) return;
+    setIsSwitching(true);
+    try {
+      await updateDoc(doc(db, "users", user.uid), {
+        role: "official"
+      });
+      // Force a hard reload to completely re-fetch the AuthContext and layout
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to upgrade role:", error);
+      setIsSwitching(false);
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -84,10 +102,28 @@ export default function ProfilePage() {
             <p className="text-slate-400 font-medium mb-6">{user.email}</p>
             
             {/* Rank display */}
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
               <Award className={`h-6 w-6 ${rankColor}`} />
               <span className={`text-xl font-bold tracking-wide ${rankColor}`}>{rank}</span>
             </div>
+
+            {/* Hackathon Demo Toggle */}
+            {role === 'citizen' && (
+              <button 
+                onClick={handleBecomeOfficial}
+                disabled={isSwitching}
+                className="flex items-center gap-2 justify-center md:justify-start mx-auto md:mx-0 px-4 py-2 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 hover:from-indigo-500/30 hover:to-purple-500/30 border border-indigo-500/50 rounded-xl transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)]"
+              >
+                {isSwitching ? (
+                  <div className="h-4 w-4 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
+                ) : (
+                  <Shield className="h-4 w-4 text-indigo-400" />
+                )}
+                <span className="text-xs font-bold text-indigo-300 tracking-widest uppercase">
+                  {isSwitching ? "Authenticating..." : "Judge Demo: Switch to Municipal View"}
+                </span>
+              </button>
+            )}
           </div>
 
           {/* Score Circle */}
