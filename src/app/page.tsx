@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import confetti from "canvas-confetti";
 
 export default function Home() {
   const { user, civicScore, refreshScore } = useAuth();
@@ -19,6 +20,9 @@ export default function Home() {
   const [result, setResult] = useState<any>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(null);
+  
+  // Gamification State
+  const [gamificationToast, setGamificationToast] = useState<{message: string, points: number} | null>(null);
 
   // Community Feed State
   const [recentIssues, setRecentIssues] = useState<any[]>([]);
@@ -75,6 +79,20 @@ export default function Home() {
     }
   };
 
+  const triggerGamification = (message: string, points: number) => {
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#38bdf8', '#fbbf24', '#f43f5e', '#34d399']
+    });
+    
+    setGamificationToast({ message, points });
+    setTimeout(() => {
+      setGamificationToast(null);
+    }, 4000);
+  };
+
   const handleUpvote = async (id: string) => {
     if (!user) {
       router.push("/login");
@@ -85,6 +103,7 @@ export default function Home() {
     try {
       await fetch(`/api/issues/${id}/upvote`, { method: "POST" });
       await awardPoints(10); // +10 pts for verifying!
+      triggerGamification("Issue Verified!", 10);
       fetchCommunityFeed(); // Refresh feed
     } catch (error) {
       console.error("Upvote failed:", error);
@@ -212,11 +231,14 @@ export default function Home() {
       });
 
       const analyzeData = await analyzeRes.json();
-      if (!analyzeData.success) throw new Error("Analysis Failed");
-
-      setResult(analyzeData.data);
-      await awardPoints(50); // Gamification: +50 pts for reporting!
-      fetchCommunityFeed(); // Refresh feed to show new post
+      if (analyzeRes.ok) {
+        setResult(analyzeData);
+        await awardPoints(50);
+        triggerGamification("Civic Duty Completed!", 50);
+        fetchCommunityFeed();
+      } else {
+        throw new Error("Analysis Failed");
+      }
     } catch (error) {
       alert("Something went wrong during analysis.");
       console.error(error);
@@ -233,9 +255,8 @@ export default function Home() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[80vh]">
+    <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[80vh]">
       
-      {/* Header Banner (Gamification display) */}
       <div className="w-full flex justify-between items-center bg-slate-900/50 backdrop-blur-md border border-slate-700/50 p-4 rounded-2xl mb-10 shadow-lg">
         <div className="flex items-center gap-3">
           <ShieldCheck className="h-6 w-6 text-sky-400" />
@@ -250,7 +271,6 @@ export default function Home() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         
-        {/* LEFT COLUMN: Upload Form */}
         <div className="lg:col-span-7 flex flex-col items-center w-full">
           <motion.div 
             initial={{ y: 20, opacity: 0 }}
@@ -258,10 +278,8 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="w-full glass-panel rounded-3xl p-8 sm:p-10 relative overflow-hidden"
           >
-            {/* Glow Effects */}
             <div className="absolute top-[-50px] left-[-50px] w-40 h-40 bg-sky-500/20 rounded-full blur-[80px] pointer-events-none" />
             
-            {/* Header */}
             <div className="text-center mb-10 relative z-10">
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3">
                 Report a <span className="glow-text">Civic Issue</span>
@@ -269,7 +287,6 @@ export default function Home() {
               <p className="text-slate-400 text-base sm:text-lg">Earn +50 Civic Points for improving your community.</p>
             </div>
 
-            {/* Upload Zone */}
             <AnimatePresence mode="wait">
               {!preview ? (
                 <motion.label 
@@ -305,7 +322,6 @@ export default function Home() {
               )}
             </AnimatePresence>
 
-            {/* Location Input */}
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -338,7 +354,6 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Submit Button */}
             <AnimatePresence>
               {!result && (
                 <motion.button 
@@ -365,7 +380,6 @@ export default function Home() {
               )}
             </AnimatePresence>
 
-            {/* Result UI */}
             <AnimatePresence>
               {result && (
                 <motion.div 
@@ -394,14 +408,10 @@ export default function Home() {
                 </motion.div>
               )}
             </AnimatePresence>
-
           </motion.div>
         </div>
 
-        {/* RIGHT COLUMN: Community Gamification */}
         <div className="lg:col-span-5 flex flex-col gap-6">
-          
-          {/* Top Leaderboard */}
           <div className="glass-panel rounded-3xl p-6 border-t-2 border-t-amber-500/50 relative overflow-hidden shadow-lg">
             <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-[60px] pointer-events-none" />
             <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
@@ -432,7 +442,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Local Feed */}
           <div className="flex-1 glass-panel rounded-3xl p-6 relative shadow-lg flex flex-col">
             <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-4 shrink-0">
               <MapPin className="h-5 w-5 text-sky-400" />
@@ -487,10 +496,28 @@ export default function Home() {
               )}
             </div>
           </div>
-
         </div>
-
       </div>
-    </div>
+
+      <AnimatePresence>
+        {gamificationToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+          >
+            <div className="bg-slate-900 border-2 border-amber-500 rounded-full py-3 px-6 shadow-[0_0_40px_rgba(251,191,36,0.3)] flex items-center gap-4">
+              <Trophy className="h-6 w-6 text-amber-500 animate-bounce" />
+              <div className="flex flex-col">
+                <span className="text-white font-bold text-sm tracking-widest uppercase">{gamificationToast.message}</span>
+                <span className="text-amber-400 font-black text-lg leading-none">+{gamificationToast.points} PTS</span>
+              </div>
+              <Sparkles className="h-5 w-5 text-yellow-400 animate-pulse" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </main>
   );
 }
