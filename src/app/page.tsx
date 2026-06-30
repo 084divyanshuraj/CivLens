@@ -50,7 +50,8 @@ export default function Home() {
       const res = await fetch("/api/issues");
       const data = await res.json();
       if (data.success) {
-        setRecentIssues(data.data.slice(0, 5)); // Just show top 5 recent
+        const activeIssues = data.data.filter((i: any) => i.status !== "resolved");
+        setRecentIssues(activeIssues.slice(0, 5)); // Just show top 5 recent active issues
       }
     } catch (error) {
       console.error("Failed to fetch feed:", error);

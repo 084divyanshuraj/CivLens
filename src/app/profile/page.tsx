@@ -55,7 +55,7 @@ export default function ProfilePage() {
       const res = await fetch("/api/issues");
       const data = await res.json();
       if (data.success) {
-        setIssues(data.data);
+        setIssues(data.data.filter((i: any) => i.status !== "resolved"));
       }
     } catch (error) {
       console.error("Failed to fetch issues:", error);

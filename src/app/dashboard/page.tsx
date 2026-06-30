@@ -41,7 +41,10 @@ export default function Dashboard() {
       const issuesData = await issuesRes.json();
       
       if (statsData.success) setStats(statsData.data);
-      if (issuesData.success) setIssues(issuesData.data);
+      if (issuesData.success) {
+        // Filter out resolved issues from the active dashboard view
+        setIssues(issuesData.data.filter((i: any) => i.status !== "resolved"));
+      }
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
     } finally {
@@ -68,14 +71,27 @@ export default function Dashboard() {
     }
   }, [user, role, authLoading, router]);
 
-  const handleExecuteResolution = () => {
+  const handleExecuteResolution = async () => {
+    if (!selectedIssue) return;
     setIsExecuting(true);
-    setTimeout(() => {
+    
+    try {
+      const res = await fetch(`/api/issues/${selectedIssue.id}/resolve`, {
+        method: "POST"
+      });
+      
+      if (res.ok) {
+        setSelectedIssue(null);
+        fetchData(true); // Refresh data silently to remove it from the list
+      } else {
+        alert("Failed to resolve issue. Please try again.");
+      }
+    } catch (error) {
+      console.error("Resolution failed:", error);
+      alert("Something went wrong.");
+    } finally {
       setIsExecuting(false);
-      setSelectedIssue(null);
-      // In a real app, this would hit an API to update status and send emails
-      alert("Resolution Executed: Emails dispatched, public advisory tweeted, and crew assigned!");
-    }, 2000);
+    }
   };
 
   if (loading) {
